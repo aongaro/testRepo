@@ -10,8 +10,8 @@ script:
     #- test ! -s lint.
 env: 
   global: 
-	- "FTP_USER=pragmaswe" 
-	- "FTP_PASSWORD=pr4gma20!4" 
+    - "FTP_USER=pragmaswe" 
+    - "FTP_PASSWORD=pr4gma20!4" 
 after_success: 
-	"curl --ftp-create-dirs -T uploadfilename -u $FTP_USER:$FTP_PASSWORD  ftp://ftp.pragmaswe.altervista.org/build/"
+    "curl --ftp-create-dirs -T uploadfilename -u $FTP_USER:$FTP_PASSWORD  ftp://ftp.pragmaswe.altervista.org/build/"
 
