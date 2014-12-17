@@ -1,0 +1,326 @@
+\documentclass{article}
+
+\usepackage{fancyhdr} % Required for custom headers
+\usepackage{lastpage} % Required to determine the last page for the footer
+\usepackage{extramarks} % Required for headers and footers
+\usepackage[usenames,dvipsnames]{color} % Required for custom colors
+\usepackage{graphicx} % Required to insert images
+\usepackage{listings} % Required for insertion of code
+\usepackage{courier} % Required for the courier font
+\pagenumbering{arabic}
+\usepackage[utf8]{inputenc}
+% Margins
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.5in
+\textheight=9.0in
+\headsep=0.25in
+
+\linespread{1.1} % Line spacing
+
+%code snippets
+\usepackage{color}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=Java,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+% Set up the header and footer
+\pagestyle{fancy}
+\lhead{\hmwkTitle} % Top left header
+%\chead{\hmwkClass\ (\hmwkClassInstructor\ \hmwkClassTime): \hmwkTitle} % Top center head
+\rhead{\firstxmark} % Top right header
+\lfoot{\lastxmark} % Bottom left footer
+\cfoot{\thepage} % Bottom center footer
+%\rfoot{Page\ \thepage\ of\ \protect\pageref{LastPage}} % Bottom right footer
+\renewcommand\headrulewidth{0.4pt} % Size of the header rule
+\renewcommand\footrulewidth{0.4pt} % Size of the footer rule
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs
+
+%CONFIG. NOME, COGNOME ECC.
+\newcommand{\hmwkTitle}{Risolutore di puzzle - parte 1} % Assignment title
+\newcommand{\hmwkDueDate}{A.A\ 2014-201} % Due date
+\newcommand{\hmwkClass}{Programmazione Concorrente e Distribuita} % Course/class
+\newcommand{\hmwkClassTime}{} % Class/lecture time
+\newcommand{\hmwkClassInstructor}{} % Teacher/lecturer
+\newcommand{\hmwkAuthorName}{Andrea\ Ongaro\ 1005923} % Your name
+
+\title{
+\vspace{2in}
+\textmd{\textbf{\hmwkTitle}}\\
+\textmd{\hmwkClass}\\
+\normalsize\vspace{0.1in}\small{\hmwkDueDate}\\
+\vspace{0.1in}\large{\textit{\hmwkClassInstructor\ \hmwkClassTime}}
+\vspace{3in}
+}
+
+\author{\textbf{\hmwkAuthorName}}
+\date{} % Insert date here if you want it to appear below your name
+
+\begin{document}
+
+\maketitle
+
+\newpage
+%%%%%INTRODUZIONE%%%%%%
+\section{Introduzione}
+Per risolvere il problema proposto, è stata pensata una struttura ad oggetti che cerca di approssimare la realtà: i pezzi del puzzle sono rappresentati dalla classe \textit{Tile}, il puzzle vero e proprio dalla classe \textit{Puzzle} che costituisce una collezione di oggetti di tipo \textit{Tile}. Quest'ultima inoltre mette a disposizione metodi per recuperare pezzi del puzzle da file di input testuale (e quindi creare la collezione "disordinata", ovvero il puzzle ancora da risolvere), per la risoluzione del gioco e per produrre un output su file. La classe \textit{PuzzleSolver} determina il percorso dei file in input ed in output, crea un'istanza della classe \textit{Puzzle} con i tasselli recuperati e scrive sul file in output il puzzle risolto. In seguito verranno trattate nel dettaglio la gerarchia delle classi, la loro struttura e il loro utilizzo. 
+
+%%%%%DESCRIZIONE CLASSI%%%%%%
+\section{Struttura delle classi e della gerarchia}
+%IMMAGINE
+\subsection{La classe \textit{Tile}}
+La classe \textit{Tile} rappresenta un tassello di un puzzle di caratteri. Ogni istanza contiene le informazioni del tassello, necessarie a comporre il puzzle: un campo dati di tipo char che rappresenta il carattere del pezzo(private char value), un identificativo di tipo String (String ID) ed gli identificativi dei vicini, immagazzinati in un array di stringhe di quattro elementi (in senso orario: il pezzo soprastante, quello alla sua destra, il pezzo sottostante e quello a sinistra). Tutti i campi dati sono \textbf{privati}, nel rispetto dell'information hiding e, per ottenere il loro valore dall'esterno, è stato reso disponibile un insieme di metodi trattati in seguito.\par
+La classe mette a disposizione un unico costruttore a sei parametri: \textit{public Tile(String identifier, char c, String north, String east, String south, String west)}. Il primo parametro è l'identificativo del tassello nel puzzle, seguono il carattere del tassello e gli identificativi dei pezzi vicini (con valore "VUOTO" se il pezzo fa parte di un bordo). Non è stato reso disponibile il costruttore di default per evitare errori di costruzione del tassello e quindi nemmeno metodi per variare i campi dati (metodi setter, con side effect sull'istanza di \textit{Tile}.
+\subsubsection{Metodi "getter"}
+L'insieme di metodi pubblici di utilità messo a disposizione per recuperare i valori dei campi dati è il seguente:
+\begin{itemize}
+\item \textit{String getID()}: restituisce l'identificativo del tassello.
+\item \textit{char getValue()}: restituisce il carattere del tassello.
+\item \textit{String getNorth()/getEast()/getSouth()/getWest()}: restituiscono l'identificatvo del tassello adiacente in base alla posizione desiderata.
+\end{itemize}
+\subsubsection{Metodi di comparazione}
+Questi metodi pubblici possono essere utilizzati per determinare a posizione di un tassello rispetto ad un altro:
+\begin{itemize}
+\item \textit{String getID()}: restituisce l'identificativo del tassello.
+\item \textit{char getValue()}: restituisce il carattere del tassello.
+\item \textit{Boolean compareNorth(Tile t)/compareEast(Tile t)/compareSouth(Tile t)/compareWest(Tile t)}: restituiscono true se l'oggetto chiamante si trova sopra, a destra, sotto o a sinistra di \textit{t}.
+\end{itemize} 
+\subsubsection{Metodi per determinare l'appartenenza ad un bordo del puzzle}
+I metodi pubblici che seguono, consentono di determinare se il tassello è i un determinato bordo del puzzle o se esso è uno dei quattro angoli:
+\begin{itemize}
+\item \textit{Boolean inFirstRow()/inLastRow()}: restituiscono true se l'oggetto chiamante è un tassello del bordo superiore o di quello inferiore.
+\item \textit{Boolean inLeftBorder()/inRightBorder()}: restituiscono true se l'oggetto chiamante è un tassello del bordo destro o di quello sinistro.
+\item \textit{int isAngle()}: se il tassello è uno dei quattro angoli, restituisce un intero corrispondente alla posizione: 1 per l'angolo in alto a sinistra, 2 per l'angolo in alto a destra, 3 per quello in basso a sinistra, 4 per quello in basso a destra e -1 se il tassello non è un angolo.
+\end{itemize} 
+\subsubsection{Metodi che forniscono la rappresentazione del tassello}
+Vengono forniti metodi pubblici anche per poter visualizzare su output la struttura del tassello:
+\begin{itemize}
+\item \textit{String toString()}: overriding del metodo della classe \textit{Object}, restituisce semplicemente il valore del tassello, convertendo char in String;
+\item \textit{String getStructure()}: restituisce una stringa che rappresenta la struttura del tassello nella forma \textbf{value, ID, [north, west, south, west]}. in ordine: il valore del carattere, l'identificativo e gli identificativi dei vicini.
+\end{itemize} 
+Inoltre la classe \textit{Tile} dispone dell'overriding del metodo \textit{clone()} che restituisce un nuovo oggetto, copia del chiamante.
+
+\subsection{L'interfaccia \textit{Puzzle}}
+Il problema proposto tratta la risoluzione di un puzzle bidimensionale e quindi in forma matriciale. Nella soluzione qui proposta, è stato effettuato un tentativo di dare una gerarchia di classi scalabile e che si adatti a situazioni diverse dal solo puzzle bidimensionale. La classe \textit{Puzzle2D}, utilizzata per risolvere il puzzle dell'esercizio, implementa l'interfaccia \textit{Puzzle}. Questa detta il contratto che le sue implementazioni devono rispettare: ogni puzzle (sia esso bidimensionale, tridimensionale,...) deve implementare i metodi:
+\begin{itemize}
+\item \textit{public void solve()}: la risoluzione vera e propria del puzzle.
+\item \textit{public void add(Tile t)}: metodo per aggiungere tasselli al puzzle. Sebbene l'interfaccia non detti il tipo di struttura per realizzare la collezione di oggetti di tipo \textit{Tile}, il suo contratto obbliga chi la implementa ad usare la classe \textit{Tile} per rappresentare i pezzi del puzzle.
+\item \textit{public void readFromFile(Path inputPath) throws PuzzleTileException, EmptyFIleException}: metodo per ottenere i tasselli del puzzle da input. Esso lancia un eccezione di tipo \textit{PuzzleTileException}, classe definita internamente a \textit{Puzzle}. \textbf{La gestione delle eccezioni e la descrizione di questa classe verrà trattata in seguito.}
+\item \textit{public void writeOnFile(Path outputPath)}: metodo per la scrittura su file del puzzle risolto.
+\end{itemize}
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=142px]{puzzle.png}
+\caption{Gerarchia per Puzzle e Puzzle2D \label{overflow}}
+\end{figure}
+
+\subsection{La classe \textit{Puzzle2D }}
+\subsubsection{Struttura della classe e costruttori}
+La classe costisce il puzzle da risolvere per questo progetto. Realizza la collezione dei tasselli mediante una \textit{ArrayDeque\texttt{<}Tile\texttt{>}} (verrà spiegato successivamente il perché di questa scelta). Contiene inoltre due interi che rappresentano il numero di righe e colonne e il charset per l'input e l'output su file (di default UTF-8).
+\begin{lstlisting}
+public class Puzzle2D implements Puzzle{
+    private ArrayDeque<Tile> puzzle;
+    private int rows, cols;
+    private boolean solved;
+    private static Charset charset = StandardCharsets.UTF_8;
+
+    /**
+     * Costruttore di default.
+     */
+    public Puzzle2D(){
+        puzzle = new ArrayDeque<Tile>();
+        rows=0;
+        cols=0;
+    }
+
+    /**
+     * Costruttore con parametri: il numero di righe e colonne e una Deque di Tile.
+     */
+    public Puzzle2D(int rows, int cols, ArrayDeque<Tile> a){
+        this.cols=cols;
+        this.rows=rows;
+        puzzle = a;
+    }
+    .....
+\end{lstlisting}
+Vengono forniti due costruttori: quello di default e quello con parametri, implementati come si può notare dal codice precedente.
+Inoltre sono presenti metodi pubblici di utilità:
+\begin{itemize}
+\item \textit{int getRows()/getCols()}: il numero di righe e colonne del puzzle.
+\item \textit{Charset getCharset() / void setCharset()}: consentono di sapere il charset correntemente utilizzato per la lettura e scrittura su file ed eventualmente modificarlo.
+\item \textit{String toString()}: restituisce una stringa che rappresenta la frase costituita dai tasselli del puzzle.
+\item \textit{String matrixView()}: strutta il metodo \textit{toArray()} della struttura \textit{ArrayDeque} per poter facilemente scorrare la coda come un array e produrre una stringa contenente il puzzle in forma matriciale.
+\end{itemize}
+
+\subsubsection{Algoritmo risolutivo e metodo \textit{solve()}}
+L'algoritmo risoutivo è stato ideato per operare un tentativo di parallelizzazione dei calcoli. (1) Come condizione iniziale si suppone di aver determinato la prima riga del puzzle, ovvero di aver recuperato tutti i tasselli (non ordinati) che la compongono. (2) Quindi l'input viene suddiviso in due sottoinsiemi: la prima riga (\textit{P}) ed  il resto dei tasselli (\textit{R}). Per ogni pezzo contenuto in \textit{P} viene determinata la colonna sottostante, recuperando i pezzi corrispondenti da \textit{R}. (3) L'ultimo passo dell'algoritmo è l'ordinamento delle colonne calcolate in precedenza e quindi si ottiene il puzzle risolto. \par
+L'utilità della struttura \textit{ArrayDeque} e quindi della coda emerge nella fase (1): il metodo \textit{add(Tile t)} non solo calcola il numero di righe e colonne del puzzle, inoltre suddivide l'input in due casi
+\begin{itemize}
+\item se il tassello fa parte della prima riga del puzzle allora viene inserito in testa;
+\item altrimenti viene inserito in coda.
+\end{itemize}
+In questo modo al termine dell'input gli elementi nella coda da [0...C-1] sono proprio la prima riga del puzzle non ordinata, quelli da [C...(R*C)-1] sono i tasselli su cui applicare (2), dove R è il numero di righe e C quello di colonne.\par 
+Successivamente, il metodo \textit{solve()} opera come segue:
+\begin{itemize}
+\item[1]  Vengono scissi in due ArrayDeque la prima riga (\textit{PR}) e il resto dei tasselli (\textit{Resto}) contenuti nel campo dati \textit{puzzle}.
+\item[2] Per ogni elemento \textit{t} di \textit{PR}, viene invocato il metodo \textbf{privato} \textit{calcCol(t,Resto)}. Questo metodo calcola la colonna determinata da \textit{t} attraverso il metodo \textit{compareNorth(t)} invocato sui tasselli di \textit{Resto}, restituendola come un ArrayDeque (ovvero un "sottopuzzle"). Ogni volta che un tassello della prima colonna viene individuato, esso viene rimosso da \textit{Resto}: in questo modo il calcolo delle successive colonne viene velocizzato a causa della diminuzione dei suoi elementi. Tutte le colonne (non ordinate) vengono salvate in un vettore di ArrayDeque \textit{V}.
+\item[3] Viene invocato il metodo \textbf{privato} \textit{sortCol(V)}, che ordina le colonne del puzzle.
+\item[4] Ordinatamente le colonne in \textit{V}, vengono unite in un'unica ArrayDeque. Il campo dati \textit{puzzle} contiene ora le C colonne risolte e ordinate del puzzle. I metodi \textit{matrixView()} e \textit{toString()} scorreranno quindi in modo opportuno la coda per creare la rappresentazione lineare e matriciale del puzzle.
+\end{itemize}
+
+\subsubsection{Input, output ed eccezioni}
+L'interfaccia \textit{Puzzle} fornisce delle classi interne per la gestione delle eccezioni lanciate in caso di input da file scorretto: 
+%DISEGNINO
+la classe astratta \textit{PuzzleTileException} e la classe \textit{EmptyFileException}, che ereditano da \textit{Exception}. La prima è statica poiché non necessita di utilizzare l'\textit{outerThis}e rappresenta la struttura di base delle eccezioni lanciate dalla classe puzzle. In particolare, ogni classe che eredita \textit{PuzzleTileException} contiene il sottoggetto di \textit{PuzzleTileException}, con un campo dati \textit{int row}, che indica la riga del file contenente l'errore e \textit{String file} che indica il file che ha generato l'eccezione. Il metodo \textit{String getMessage()} definito dal contratto e astratto, contiene un particolare messaggio di  da restituire in caso si verifichi il lancio dell'eccezione. La classe \textit{EmptyFileException} rappresenta l'eccezione da lanciare in caso di file di input vuoto.\par 
+Inoltre, Puzzle2D fornisce due conretizzazioni di \textit{PuzzleTileException}:
+\begin{lstlisting}
+	public static abstract class PuzzleTileException extends Exception{
+        private int row;
+        private String file;
+
+        public PuzzleTileException(int r, String fileName){
+            row = r;
+            file = fileName;
+        }
+
+        public int getRow(){return row;}
+        public String getFile(){return file;}
+        public abstract String getMessage();
+    }
+
+	//IN Puzzle2D
+    public static class TileStructureException extends PuzzleTileException{
+        public TileStructureException(int r, String file){
+            super(r, file);
+        }
+
+        public String getMessage(){
+            return new String("Errore in riga "+getRow()+" del file "+getFile()+
+                    ": struttura tassello errata.");
+        }
+
+    }
+
+    public static class TileValueException extends PuzzleTileException{
+        public TileValueException(int r, String file){
+            super(r, file);
+        }
+
+        public String getMessage(){
+            return new String("Errore in riga "+getRow()+" del file "+getFile()+
+                    ": valore del tassello non valido");
+        }
+
+    }
+\end{lstlisting}
+\textit{TileValueException} si verifica quando il valore del tassello del puzzle (in questo caso un carattere) è errato (ad esempio una stringa anziché un carattere), mentre \textit{TileStructureException} viene lanciata se la struttura di rappresentazione del tassello nel file di input è errata (ad esempio se sono presenti più di sei elementi per riga, separati dal carattere di tabulazione). \par
+Si supponga di leggere una riga del file e di inserirla in una stringa. Eliminando da essa i caratteri di tabulazione, si ottiene un array di stringhe di sei elementi: l'identificativo del tassello, il suo carattere e gli identificativi dei pezzi vicini. Il codice per l'inserimento del tassello nell'ArrayDeque è il seguente:
+\begin{lstlisting}
+			int cont=0;//indica la riga attuale del file
+			while ((line = reader.readLine()) != null) {
+                cont++;
+                String[] tokens = line.split('\t');//separazione delle stringhe 
+
+                if(tokens.length>6 || tokens.length<6)
+                    throw new TileStructureException(cont, inputPath.toString());
+                else if(tokens[1].length()>1)
+                    throw new TileValueException(cont, inputPath.toString());
+                else{
+                    Tile t = new Tile(tokens[0],tokens[1].charAt(0),tokens[2],tokens[3],tokens[4],
+                            tokens[5]);
+                    this.add(t);
+                }
+            }
+\end{lstlisting}
+Un esempio di gestione di queste eccezioni è il seguente:
+\begin{lstlisting}
+		try{
+            p.readFromFile(inputPath);
+            p.solve();
+            p.writeOnFile(outputPath);
+        }catch (Puzzle.PuzzleTileException e){
+            System.out.println(e.getMessage());
+        }
+\end{lstlisting}
+\textit{p.readFromFile(inputPath)} può lanciare un'eccezione di tipo \textit{TileStructureException} o \textit{TileValueException}. Essa viene gestita attraverso il riferimento polimorfo \textit{PuzzleTileException e} nel blocco catch, infatti grazie al binding dinamico l'istruzione \textit{System.out.println(e.getMessage())} richiama uno degli override di \textit{getMessage()} in base al tipo dinamico di \textit{e}.
+
+\subsection{La classe \textit{PuzzleSolver}}
+La classe \textit{PuzzleSolver} è la classe che contiene il main. Attraverso la funzione statica \textit{public static void solver(String inFile, String outFile)}, preleva args[0] e args[1] (percorso dei file di input e output), crea un \textit{Puzzle2D} a partire dai tasselli di inFile, invoca su di esso il metodo \textit{solve()} e scrive l'output su outFile, gestendo le eccezioni lanciate da \textit{readFromFile(Path)} come enunciato in precedenza.
+
+\section{Test effettuati}
+Il programma ha rislto in modo corretto con i seguenti puzzle RxC input (con i tasselli mescolati):
+\begin{itemize}
+
+\item[R = C] 
+\begin{tabular}{l|l|l|l|r|}
+\hline
+c & i & a & o \\
+\hline
+i & o & s & o \\
+\hline
+n & a & n & d \\
+\hline
+r  & e & a & ; \\
+\hline
+\end{tabular}
+
+\item[R \texttt{>} C]
+\begin{tabular}{l|l|l|l|r|}
+\hline
+c & i & a & o \\
+\hline
+i & o & s & o \\
+\hline
+n & a & n & d \\
+\hline
+r  & e & a & ; \\
+\hline
+h  & o & l & a \\
+\hline
+\end{tabular}
+
+\item[R \texttt{<} C]
+\begin{tabular}{l|l|l|l|r|}
+\hline
+c & i & a  & o & i \\
+\hline
+o & s & o & n & a  \\
+\hline
+n & d & r & e & a \\
+\hline
+\end{tabular}
+
+\end{itemize}
+Sono stati effettuati diversi test esaminando i casi limite che possono provocare il lancio delle eccezioni:
+\begin{itemize}
+\item seconda riga del file in input \textit{inFile} composta dai caratteri  \textit{ab \texttt{\textbackslash t} i \texttt{\textbackslash t} VUOTO \texttt{\textbackslash t} ac \texttt{\textbackslash t} af \texttt{\textbackslash t}aa \texttt{\textbackslash t} VUOTO} (7 elementi): viene lanciata un'eccezione di tipo \textit{TileStructureException} e stampato a video il messaggio: "Errore in riga 2 del file inFile: struttura tassello errata."
+
+\item seconda riga del file in input \textit{inFile} composta dai caratteri  \textit{ab \texttt{\textbackslash t} i \texttt{\textbackslash t} VUOTO \texttt{\textbackslash t} ac \texttt{\textbackslash t} af} (5 elementi): viene lanciata un'eccezione di tipo \textit{TileStructureException} e stampato a video il messaggio: "Errore in riga 2 del file inFile: struttura tassello errata."
+
+\item prima riga del file in input \textit{inFile} composta dai caratteri  \textit{ab \texttt{\textbackslash t} al \texttt{\textbackslash t} VUOTO \texttt{\textbackslash t} ac \texttt{\textbackslash t} af \texttt{\textbackslash t} 	aa}: viene lanciata un'eccezione di tipo \textit{TileValueException} e stampato a video il messaggio: "Errore in riga 1 del file inFile: valore del tassello non valido."
+
+\item prima riga del file in input \textit{inFile} composta dai caratteri  \textit{ab \texttt{\textbackslash t} \# \texttt{\textbackslash t} VUOTO \texttt{\textbackslash t} ac \texttt{\textbackslash t} af \texttt{\textbackslash t} 	aa}: viene lanciata un'eccezione di tipo \textit{TileValueException} e stampato a video il messaggio: "Errore in riga 1 del file inFile: valore del tassello non valido."
+
+\item inFile vuoto: viene lanciata un'eccezione di tipo \textit{EmptyFileException} e stampato a video il messaggio: "File inFile vuoto."
+\end{itemize}
+\end{document} 
