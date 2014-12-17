@@ -8,10 +8,11 @@ script:
     #- chktex -q -n 6 *.tex chapters.*.tex 2>/dev/null | tee lint.out
     # If lint output is non-empty report an error.
     #- test ! -s lint.
-env: 
-  global: 
-    - "FTP_USER=pragmaswe" 
-    - "FTP_PASSWORD=pr4gma20!4" 
-after_success: 
-    "curl --ftp-create-dirs -T * -u $FTP_USER:$FTP_PASSWORD ftp://ftp.pragmaswe.altervista.org/build/"
-
+deploy:
+  provider: releases
+  api-key: "4cc94e8957a9c831e452fc6c38fe5655134f48a9"
+  file: "relazione.pdf"
+  skip_cleanup: true
+  on:
+    tags: true
+    all_branches: true
